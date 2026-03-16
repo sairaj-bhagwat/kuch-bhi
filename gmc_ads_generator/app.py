@@ -23,11 +23,15 @@ def generate():
     # For now, we'll use the sample generated previously for demo.
     product_image_path = "C:\\Users\\Main\\.gemini\\antigravity\\brain\\75c132c6-d0c9-41eb-8324-cff6b717fdde\\sample_wellness_product_1773650319659.png"
     
-    ingredients = request.form.get('ingredients').split(',')
-    benefit_headlines = request.form.get('benefit_headlines').split(',')
+    # Parse ingredients and headlines more robustly
+    ingredients = [i.strip() for i in request.form.get('ingredients', '').split(',') if i.strip()]
+    benefit_headlines = [b.strip() for b in request.form.get('benefit_headlines', '').split(',') if b.strip()]
     
+    if not benefit_headlines:
+        benefit_headlines = ["Supports Your Natural Wellness"]
+        
     # Simple list of tuples for ingredients with benefits
-    benefit_points = [(ing.strip(), f"Supports {ing.strip()} health") for ing in ingredients[:4]]
+    benefit_points = [(ing, f"Supports {ing} health") for ing in ingredients[:4]]
     
     how_to_use_steps = [
         ("Step 1", "Mix with water"),
@@ -38,24 +42,21 @@ def generate():
     # Initialize Generator
     gen = AdGenerator(brand_name, product_name, price)
     
-    # Generate Frames
-    f1 = gen.generate_frame_1_product_shot(product_image_path)
-    gen.save_frame(f1, "1_product_shot.png", output_dir=EXPORT_DIR)
+    print(f"Generating ads for: {product_name}...")
     
-    f2 = gen.generate_frame_2_wellness_benefit(benefit_headlines[0])
-    gen.save_frame(f2, "2_wellness_benefit.png", output_dir=EXPORT_DIR)
+    # Generate and save all 6 frames
+    frames = [
+        (gen.generate_frame_1_product_shot(product_image_path), "1_product_shot.png"),
+        (gen.generate_frame_2_wellness_benefit(benefit_headlines[0]), "2_wellness_benefit.png"),
+        (gen.generate_frame_3_ingredient_benefit(benefit_points), "3_ingredient_benefit.png"),
+        (gen.generate_frame_4_how_to_use(how_to_use_steps), "4_how_to_use.png"),
+        (gen.generate_frame_5_ingredient_list(ingredients), "5_ingredient_list.png"),
+        (gen.generate_frame_6_offer_solution(product_image_path), "6_offer_solution.png")
+    ]
     
-    f3 = gen.generate_frame_3_ingredient_benefit(benefit_points)
-    gen.save_frame(f3, "3_ingredient_benefit.png", output_dir=EXPORT_DIR)
-    
-    f4 = gen.generate_frame_4_how_to_use(how_to_use_steps)
-    gen.save_frame(f4, "4_how_to_use.png", output_dir=EXPORT_DIR)
-    
-    f5 = gen.generate_frame_5_ingredient_list([i.strip() for i in ingredients])
-    gen.save_frame(f5, "5_ingredient_list.png", output_dir=EXPORT_DIR)
-    
-    f6 = gen.generate_frame_6_offer_solution(product_image_path)
-    gen.save_frame(f6, "6_offer_solution.png", output_dir=EXPORT_DIR)
+    for canvas, filename in frames:
+        gen.save_frame(canvas, filename, output_dir=EXPORT_DIR)
+        print(f"Saved {filename}")
     
     return redirect(url_for('results'))
 

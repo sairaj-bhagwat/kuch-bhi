@@ -100,12 +100,30 @@ class AdGenerator:
         self.draw_text_centered(draw, self.brand_name.upper(), 50, 40, self.colors["accent"])
         draw.line([300, 110, 780, 110], fill=self.colors["accent"], width=2)
 
+    def draw_text_at_pos(self, draw, text, pos, size, color=None, center=True):
+        if color is None:
+            color = self.colors["text"]
+        font = self.get_font(size)
+        x, y = pos
+        if center:
+            try:
+                bbox = draw.textbbox((0, 0), text, font=font)
+                tw = bbox[2] - bbox[0]
+                th = bbox[3] - bbox[1]
+                x = x - tw // 2
+                y = y - th // 2 - 5 # Small adjustment for baseline
+            except AttributeError:
+                tw, th = draw.textsize(text, font=font)
+                x = x - tw // 2
+                y = y - th // 2
+        draw.text((x, y), text, font=font, fill=color)
+
     def generate_frame_1_product_shot(self, product_image_path):
         canvas = self.create_canvas()
         draw = ImageDraw.Draw(canvas)
         self.draw_header(draw)
-        self.paste_product_image(canvas, product_image_path, size=(700, 700))
-        self.draw_text_centered(draw, self.product_name, 850, 60)
+        self.paste_product_image(canvas, product_image_path, size=(650, 650), position=((self.width-650)//2, 150))
+        self.draw_text_centered(draw, self.product_name, 850, 70)
         return canvas
 
     def generate_frame_2_wellness_benefit(self, benefit_headline):
@@ -113,11 +131,26 @@ class AdGenerator:
         draw = ImageDraw.Draw(canvas)
         self.draw_header(draw)
         
-        # Central square for visual
-        draw.rectangle([200, 200, 880, 700], fill=self.colors["white"], outline=self.colors["accent"])
-        self.draw_text_centered(draw, "Wellness Focus", 400, 40, (180, 180, 180))
+        # Elegant border for wellness frame
+        draw.rectangle([50, 150, 1030, 930], outline=self.colors["accent"], width=4)
         
-        self.draw_text_centered(draw, benefit_headline, 800, 50)
+        # Subtitle
+        self.draw_text_centered(draw, "HERBAL WELLNESS BLEND", 200, 35, self.colors["accent"])
+        
+        # Large central text for benefit
+        lines = [benefit_headline]
+        if len(benefit_headline) > 25:
+            # Simple wrapping if headline is long
+            words = benefit_headline.split()
+            lines = [" ".join(words[:len(words)//2]), " ".join(words[len(words)//2:])]
+            
+        y = 450
+        for line in lines:
+            self.draw_text_centered(draw, line, y, 65)
+            y += 85
+            
+        # Small Footer note for compliance
+        self.draw_text_centered(draw, "*This product is a dietary supplement and supports general well-being.", 980, 20, (150, 150, 150))
         return canvas
 
     def generate_frame_3_ingredient_benefit(self, ingredients_with_benefits):
@@ -125,48 +158,49 @@ class AdGenerator:
         draw = ImageDraw.Draw(canvas)
         self.draw_header(draw)
         
-        y = 250
+        self.draw_text_centered(draw, "WELLNESS INGREDIENTS", 160, 45, self.colors["accent"])
+        
+        y = 300
         for ing, ben in ingredients_with_benefits[:4]:
-            # Simple icon placeholder
-            draw.ellipse([150, y, 210, y+60], fill=self.colors["accent"])
-            font_bold = self.get_font(40)
-            font_reg = self.get_font(30)
-            draw.text((250, y), ing, font=font_bold, fill=self.colors["text"])
-            draw.text((250, y + 45), ben, font=font_reg, fill=(100, 100, 100))
-            y += 180
+            # Circle for icon
+            cx, cy = 180, y + 40
+            draw.ellipse([cx-40, cy-40, cx+40, cy+40], fill=self.colors["accent"])
+            self.draw_text_at_pos(draw, ing[0].upper(), (cx, cy), 45, self.colors["white"])
+            
+            self.draw_text_at_pos(draw, ing, (260, y), 45, center=False)
+            self.draw_text_at_pos(draw, ben, (260, y + 50), 30, color=(120, 120, 120), center=False)
+            y += 160
         return canvas
 
     def generate_frame_4_how_to_use(self, steps):
         canvas = self.create_canvas(self.colors["bg_light"])
         draw = ImageDraw.Draw(canvas)
         self.draw_header(draw)
-        self.draw_text_centered(draw, "HOW TO USE", 180, 45, self.colors["accent"])
+        self.draw_text_centered(draw, "HOW TO USE", 180, 55, self.colors["accent"])
         
-        y = 300
+        y = 350
         for i, (icon_text, instruction) in enumerate(steps[:3]):
             # Step circle
-            draw.ellipse([150, y, 250, y+100], outline=self.colors["accent"], width=3)
-            self.draw_text_centered(draw, str(i+1), y+25, 50, self.colors["accent"]) # Approximate centering
+            cx, cy = 200, y + 40
+            draw.ellipse([cx-45, cy-45, cx+45, cy+45], outline=self.colors["accent"], width=3)
+            # Correctly centered step number
+            self.draw_text_at_pos(draw, str(i+1), (cx, cy), 45, self.colors["accent"])
             
-            draw.text((300, y+30), instruction, font=self.get_font(35), fill=self.colors["text"])
-            y += 200
+            # Instruction text
+            self.draw_text_at_pos(draw, instruction, (300, y+20), 40, center=False)
+            y += 180
         return canvas
 
     def generate_frame_5_ingredient_list(self, full_list):
         canvas = self.create_canvas()
         draw = ImageDraw.Draw(canvas)
         self.draw_header(draw)
-        self.draw_text_centered(draw, "PURE INGREDIENTS", 180, 50, self.colors["accent"])
+        self.draw_text_centered(draw, "PURE INGREDIENTS", 180, 55, self.colors["accent"])
         
-        text = "\n".join(full_list)
-        # Use draw_text_centered variant for multiline if needed, but here we just list
-        y = 300
-        font = self.get_font(40)
+        y = 350
         for item in full_list:
-            bbox = draw.textbbox((0, 0), item, font=font)
-            tw = bbox[2] - bbox[0]
-            draw.text(((self.width - tw)//2, y), item, font=font, fill=self.colors["text"])
-            y += 70
+            self.draw_text_centered(draw, f"• {item}", y, 45)
+            y += 80
         return canvas
 
     def generate_frame_6_offer_solution(self, product_image_path):
@@ -174,10 +208,10 @@ class AdGenerator:
         draw = ImageDraw.Draw(canvas)
         self.draw_header(draw)
         
-        self.paste_product_image(canvas, product_image_path, size=(500, 500), position=(290, 200))
+        self.paste_product_image(canvas, product_image_path, size=(550, 550), position=((self.width-550)//2, 180))
         
-        self.draw_text_centered(draw, self.product_name, 720, 55)
-        self.draw_text_centered(draw, f"Price: {self.price}", 800, 65, self.colors["accent"])
+        self.draw_text_centered(draw, self.product_name, 750, 60)
+        self.draw_text_centered(draw, f"MRP: {self.price}", 830, 70, self.colors["accent"])
         
-        self.draw_rounded_button(draw, "Shop Now", (540, 950))
+        self.draw_rounded_button(draw, "Shop Now", (540, 960))
         return canvas
