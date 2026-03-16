@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMC Ad Generator - Local Host</title>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --bg: #f5f7f9;
+            --card: #ffffff;
+            --text: #333;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); padding: 40px; }
+        .container { max-width: 800px; margin: auto; background: var(--card); padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        h1 { text-align: center; color: var(--primary); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 18px; cursor: pointer; transition: background 0.3s; }
+        button:hover { background: #45a049; }
+        .hint { font-size: 13px; color: #777; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GMC Ad Generator</h1>
+        <p style="text-align: center;">Generate GMC-Compliant Meta Ads Locally</p>
+        <form action="/generate" method="post">
+            <div class="form-group">
+                <label for="brand_name">Brand Name</label>
+                <input type="text" id="brand_name" name="brand_name" placeholder="e.g., Zenith Herbal" required>
+            </div>
+            <div class="form-group">
+                <label for="product_name">Product Name</label>
+                <input type="text" id="product_name" name="product_name" placeholder="e.g., Vitality Blend" required>
+            </div>
+            <div class="form-group">
+                <label for="price">Price</label>
+                <input type="text" id="price" name="price" placeholder="e.g., ₹599" required>
+            </div>
+            <div class="form-group">
+                <label for="ingredients">Ingredients (Comma separated)</label>
+                <input type="text" id="ingredients" name="ingredients" placeholder="Ashwagandha, Brahmi, Turmeric" required>
+            </div>
+            <div class="form-group">
+                <label for="benefit_headlines">Wellness Headlines (Comma separated)</label>
+                <textarea id="benefit_headlines" name="benefit_headlines" rows="2" placeholder="Supports Your Daily Energy Levels, Natural Wellness Blend" required></textarea>
+                <p class="hint">Avoid words like "Cure", "Treat", or "Guaranteed".</p>
+            </div>
+            <button type="submit">Generate 6 Creative Frames</button>
+        </form>
+    </div>
+</body>
+</html>
